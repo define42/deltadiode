@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Diode</title>
+  <link href="static/bootstrap.css" rel="stylesheet">
+</head>
+
+<body>
+
+
+  <br>
+  <div class="shadow-none p-3 mb-5 bg-light rounded">
+    <h3>Upload </h3>
+    <div>
+      <form enctype="multipart/form-data" action="./upload" method="post">
+        <div class="form-group">
+		User:<input type="text" name="user"/><br>
+          File:<input type="file" name="myFile" multiple/>
+          <input type="submit" value="upload" class="btn btn-primary" />
+      </form>
+    </div>
+  </div>
+  </div>
+
+
+</body>
+
+</html>

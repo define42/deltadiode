@@ -1,0 +1,4 @@
+github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
+github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
+github.com/xssnick/tonutils-go v1.8.8 h1:D9LauvmIY6HZAXNMfSL+d9xTgZCBDPBwm1FF6aH+k+4=
+github.com/xssnick/tonutils-go v1.8.8/go.mod h1:rqfQ4jsLaFhUUvouz2hTTC02nQGszOhSps7tGAKRC8g=
