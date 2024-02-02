@@ -1,7 +1,6 @@
 package main
 
 import (
-	//"github.com/miketruman/com"
 	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
@@ -9,12 +8,12 @@ import (
 	"deltadiode/Message"
 	"deltadiode/UDPSender"
 	"deltadiode/UDPreceiver"
+	"deltadiode/config"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"hash"
 	"io"
-	//	"io/ioutil"
-	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -46,18 +45,7 @@ func RelayNode(numChannels int, fromInterface, toInterface string, groupFrom int
 				return
 			}
 
-			//			uniqueSet := make(map[string]bool)
 			for msg := range receiver.MessageCh {
-				/*
-					if len(uniqueSet) > 10000 {
-						uniqueSet = make(map[string]bool)
-						fmt.Println("CLEAN")
-					}
-
-					if _, exists := uniqueSet[string(msg)]; exists {
-						fmt.Println("PAAAAAAAAAANI")
-					}
-					uniqueSet[string(msg)] = true*/
 				sender.SendHash(getSHA256(msg))
 			}
 		}(i)
@@ -179,7 +167,7 @@ func (fileWriterStore *FileWriterStore) Process(msg *Message.Message) {
 		fileWriterStore.Writer.Close()
 		fileWriterStore.FileIndex = msg.FileIndex
 		fileWriterStore.Hash = sha256.New()
-		tmpFile := "/data/" + msg.Filename
+		tmpFile := config.Settings.Get(config.DATA_FOLDER) + msg.Filename
 
 		var err error
 		fileWriterStore.Writer, err = os.OpenFile(tmpFile, os.O_RDWR|os.O_CREATE, 0777)
@@ -356,19 +344,32 @@ func (pitcherStore PitcherStore) sharedUpload(filename string, file io.Reader) e
 }
 
 func main() {
+	config.Settings.Init()
+	os.Mkdir(config.Settings.Get(config.DATA_FOLDER), os.ModePerm)
+	mux := mux.NewRouter()
 
 	threads := 32
-	fileReceiver(threads, "enp0s31f6", "enp0s31f6", 3000, 4000)
+	if config.Settings.Has(config.DMZ_RX) && config.Settings.Has(config.DMZ_TX) {
+		dmzRx := config.Settings.Get(config.DMZ_RX)
+		dmzTx := config.Settings.Get(config.DMZ_TX)
+		fileReceiver(threads, dmzRx, dmzTx, 3000, 4000)
+	}
 
-	RelayNode(threads, "enxac1a3d8c49f9", "enxac1a3d8c49f9", 4000, 8000)
+	if config.Settings.Has(config.IN_RX) && config.Settings.Has(config.IN_TX) {
+		inRx := config.Settings.Get(config.IN_RX)
+		inTx := config.Settings.Get(config.IN_TX)
+		RelayNode(threads, inRx, inTx, 4000, 8000)
+	}
 
-	pitcherStore := PitcherStore{multiChannelQueue: NewMultiChannelQueue(threads, "enx24f5a2f21f4b", "enx24f5a2f21f4b", 8000, 3000)}
-
-	mux := mux.NewRouter()
-	fs := http.FileServer(http.Dir("./static"))
-	mux.Handle("/", fs)
-	mux.HandleFunc("/upload", pitcherStore.uploadFile)
-	mux.HandleFunc("/test", pitcherStore.uploadTestFile)
+	if config.Settings.Has(config.OUT_RX) && config.Settings.Has(config.OUT_TX) {
+		outRx := config.Settings.Get(config.OUT_RX)
+		outTx := config.Settings.Get(config.OUT_TX)
+		pitcherStore := PitcherStore{multiChannelQueue: NewMultiChannelQueue(threads, outRx, outTx, 8000, 3000)}
+		fs := http.FileServer(http.Dir("./static"))
+		mux.Handle("/", fs)
+		mux.HandleFunc("/upload", pitcherStore.uploadFile)
+		mux.HandleFunc("/test", pitcherStore.uploadTestFile)
+	}
 
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
