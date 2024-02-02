@@ -101,8 +101,6 @@ func (s *UDPSender) Send(msg Message.Message) error {
 		return err
 	}
 
-//	_, err = conn.Write(buf.Bytes())
-
 	s.messages <- buf.Bytes()
 	return nil
 }

@@ -75,7 +75,6 @@ func (r *UDPreceiver) Start() error {
 
 			// Send the received message to the channel
 			r.MessageCh <- packet
-			//r.MessageCh <- string(buffer[:n])
 		}
 	}()
 

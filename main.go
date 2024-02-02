@@ -76,7 +76,6 @@ func NewMultiChannelQueue(numChannels int, fromInterface, toInterface string, fr
 }
 
 type MultiChannelQueue struct {
-	//      channels []chan []byte
 	locks       []sync.Mutex
 	udpsender   []*UDPSender.UDPSender
 	udpreceiver []*HashReceiver.HASHreceiver
@@ -87,9 +86,7 @@ type PitcherStore struct {
 }
 
 func (pitcherStore PitcherStore) uploadTestFile(w http.ResponseWriter, r *http.Request) {
-
 	filename := randomString(10) + ".dat"
-	//	username := "test"
 	const size10MB = 100 * 1024 * 1024 // 100MB
 	reader := &DataReader{size: size10MB}
 	startTime := time.Now()
@@ -258,17 +255,12 @@ func (pitcherStore PitcherStore) uploadFile(w http.ResponseWriter, r *http.Reque
 		}
 
 		if part.FormName() == "myFile" {
-			/*	if len(user) == 0 {
-				http.Error(w, "missing user", http.StatusBadRequest)
-				return
-			}*/
 			fmt.Println("Sending:", part.FileName())
 			pitcherStore.sharedUpload(part.FileName(), part)
 			fmt.Println("Completed:", part.FileName())
 			fmt.Fprintln(w, "Completed filename:", part.FileName())
 		}
 	}
-
 }
 
 func (pitcherStore PitcherStore) sharedUpload(filename string, file io.Reader) error {
@@ -292,8 +284,6 @@ func (pitcherStore PitcherStore) sharedUpload(filename string, file io.Reader) e
 				fileHash := hash.Sum(nil)
 				message := Message.Message{Data: buf[:n], Filename: filename, FileIndex: fileIndex, Hash: fileHash, SequenceNumber: sequenceNumber, Last: lastMessage}
 				pitcherStore.multiChannelQueue.udpsender[i].Send(message)
-				//			receiverHash := sha256.New()
-				//			receiverHash.Write(fileHash)
 				receiverHash := getSHA256(getSHA256(fileHash))
 
 				reTransmitCount := 0
